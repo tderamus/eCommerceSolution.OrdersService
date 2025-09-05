@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using eCommerce.OrderMicroservice.DataAccessLayer.Repositories;
+using eCommerce.OrderMicroservice.DataAccessLayer.RepositoryContracts;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
@@ -21,6 +23,8 @@ public static class DependencyInjection
             IMongoClient mongoClient = IConfigurationProvider.GetRequiredService<IMongoClient>();
             return mongoClient.GetDatabase("eCommerceOrdersDB");
         });
+
+            services.AddScoped<IOrdersRepository, OrdersRepository>();
 
 
         return services;

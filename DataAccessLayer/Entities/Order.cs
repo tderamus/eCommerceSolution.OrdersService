@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace eCommerce.OrderMicroservice.DataAccessLayer.Entities;
 
-public class Orders
+public class Order
 {
     [BsonId]
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
