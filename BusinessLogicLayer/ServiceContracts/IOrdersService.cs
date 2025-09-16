@@ -7,11 +7,11 @@ namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts
 {
     public interface IOrdersService
     {
-        Task<List<OrderResponse>> GetAllOrdersAsync();
-        Task<OrderResponse> GetOrdersByConditionAsync(FilterDefinition<Order> filter);
-        Task<OrderResponse> GetOrderByConditionAsync(FilterDefinition<Order> filter);
-        Task<OrderResponse> CreateOrderAsync(OrderAddRequest orderAddRequest);
-        Task<OrderResponse> UpdateOrderAsync(OrderUpdateRequest orderUpdateRequest);
-        Task<bool> DeleteOrderAsync(Guid orderID);
+        Task<List<OrderResponse?>> GetOrders();
+        Task<List<OrderResponse?>> GetOrdersByCondition(FilterDefinition<Order> filter);
+        Task<OrderResponse?> GetOrderByCondition(FilterDefinition<Order> filter);
+        Task<OrderResponse> CreateOrder(OrderAddRequest orderAddRequest);
+        Task<OrderResponse?> UpdateOrder(OrderUpdateRequest orderUpdateRequest);
+        Task<bool> DeleteOrder(Guid orderID);
     }
 }
