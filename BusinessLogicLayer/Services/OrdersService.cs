@@ -4,6 +4,7 @@ using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 using eCommerce.OrdersMicroservice.DataAccessLayer.RepositoryContracts;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using MongoDB.Driver;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Services;
@@ -66,7 +67,7 @@ public class OrdersService : IOrdersService
         {
            orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
         }
-        orderInput.TotalAmount = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
+        orderInput.TotalBill = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
 
         // Call the repository to add the order
         Order? addedOrder = await _ordersRepository.CreateOrder(orderInput);
@@ -115,7 +116,7 @@ public class OrdersService : IOrdersService
         {
             orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
         }
-        orderInput.TotalAmount = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
+        orderInput.TotalBill = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
 
         // Call the repository to add the order
         Order? updatedOrder = await _ordersRepository.UpdateOrder(orderInput);
@@ -132,7 +133,7 @@ public class OrdersService : IOrdersService
     public async Task<bool> DeleteOrder(Guid orderID)
     {
         //Create filter to find the order by orderID
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderId, orderID);
+        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderID, orderID);
         Order? existingOrder = await _ordersRepository.GetOrderByCondition(filter);
 
         if (existingOrder == null)
@@ -153,8 +154,9 @@ public class OrdersService : IOrdersService
         Order? order = await _ordersRepository.GetOrderByCondition(filter);
         if (order == null)
         {
-            return default;
+            Results.NotFound("Order ID cannot be found");
         }
+
         OrderResponse orderResponse = _mapper.Map<OrderResponse>(order);
         return orderResponse;
     }

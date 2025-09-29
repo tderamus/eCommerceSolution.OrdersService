@@ -14,14 +14,15 @@ public static class DependencyInjection
 
         string connectionStringTemplate = configuration.GetConnectionString("MongoDB")!;
         string connectionString = connectionStringTemplate
-            .Replace("$MONGO_HOST", Environment.GetEnvironmentVariable("MONGODB_HOST")!)
-            .Replace("$MONGO_PORT", Environment.GetEnvironmentVariable("MONGODB_PORT")!);
+            .Replace("$MONGODB_HOST", Environment.GetEnvironmentVariable("MONGODB_HOST")!)
+            .Replace("$MONGODB_PORT", Environment.GetEnvironmentVariable("MONGODB_PORT")!)
+            .Replace("$MONGODB_DATABASE", Environment.GetEnvironmentVariable("MONGODB_DATABASE")!);
 
         services.AddSingleton<IMongoClient>(new MongoClient(connectionString));
-        services.AddScoped<IMongoDatabase>(IConfigurationProvider =>
+        services.AddScoped<IMongoDatabase>(provider =>
         {
-            IMongoClient mongoClient = IConfigurationProvider.GetRequiredService<IMongoClient>();
-            return mongoClient.GetDatabase("eCommerceOrdersDB");
+            IMongoClient mongoClient = provider.GetRequiredService<IMongoClient>();
+            return mongoClient.GetDatabase(Environment.GetEnvironmentVariable("MONGODB_DATABASE")!);
         });
 
             services.AddScoped<IOrdersRepository, OrdersRepository>();

@@ -1,6 +1,7 @@
 ﻿using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 using eCommerce.OrdersMicroservice.DataAccessLayer.RepositoryContracts;
 using MongoDB.Driver;
+using Microsoft.Extensions.Logging;
 
 namespace eCommerce.OrdersMicroservice.DataAccessLayer.Repositories;
 
@@ -8,13 +9,23 @@ public class OrdersRepository : IOrdersRepository
 {
     private readonly IMongoCollection<Order> _orders;
     private readonly string _collectionName = "Orders";
-    public OrdersRepository(IMongoDatabase mongoDatabase)
+    private readonly ILogger<OrdersRepository> _logger;
+
+    public OrdersRepository(IMongoDatabase mongoDatabase, ILogger<OrdersRepository> logger)
     {
          _orders = mongoDatabase.GetCollection<Order>(_collectionName);
+         _logger = logger;
     }
+
     public async Task<Order?> CreateOrder(Order order)
     {
-        order.OrderId = Guid.NewGuid();
+        order.OrderID = Guid.NewGuid();
+        order._id = order.OrderID;
+
+        foreach (OrderItem orderItem in order.OrderItems)
+        {
+            orderItem._id = Guid.NewGuid();
+        }
 
         await _orders.InsertOneAsync(order);
         return order;
@@ -22,7 +33,7 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<bool> DeleteOrder(Guid orderID)
     {
-       FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderId, orderID);
+       FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderID, orderID);
 
         Order? orderToDelete = (await _orders.FindAsync(filter)).FirstOrDefault();
 
@@ -54,13 +65,13 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<Order?> UpdateOrder(Order order)
     {
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderId, order.OrderId);
+        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderID, order.OrderID);
 
         Order? orderToUpdate= (await _orders.FindAsync(filter)).FirstOrDefault();
 
         if (orderToUpdate == null)
         {
-            return null; // Order not found
+            return null;
         }
 
         ReplaceOneResult replaceOneResult = await _orders.ReplaceOneAsync(filter, order);

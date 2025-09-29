@@ -1,13 +1,11 @@
 ﻿
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography.X509Certificates;
+
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Validators;
 
-internal class OrderUpdateRquestValidator : AbstractValidator<OrderUpdateRequest>
+public class OrderUpdateRquestValidator : AbstractValidator<OrderUpdateRequest>
 {
     public OrderUpdateRquestValidator()
     {
