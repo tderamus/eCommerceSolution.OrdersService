@@ -32,7 +32,8 @@ namespace OrdersMicroservice.API.ApiControllers
             FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderID, orderID);
 
             OrderResponse? order = await _ordersService.GetOrderByCondition(filter);
-            return order;
+
+            return order == null ? throw new Exception("Order does not exist") : order;
         }
 
         // GET: api/orders/search/productID/{productID}
