@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 using eCommerce.OrdersMicroservice.DataAccessLayer.RepositoryContracts;
@@ -13,6 +14,7 @@ public class OrdersService : IOrdersService
 {
     private readonly IOrdersRepository _ordersRepository;
     private readonly IMapper _mapper;
+    private readonly UsersMicroserviceClient _usersMicroserviceClient;
     private readonly IValidator<OrderAddRequest> _orderAddRequestValidator;
     private readonly IValidator<OrderItemAddRequest> _orderItemAddRequestValidator;
     private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
@@ -22,10 +24,12 @@ public class OrdersService : IOrdersService
         IValidator<OrderAddRequest> orderAddRequestValidator,
         IValidator<OrderItemAddRequest> orderItemAddRequestValidator,
         IValidator<OrderUpdateRequest> orderUpdateRequestValidagor,
-        IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator)
+        IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator,
+        UsersMicroserviceClient usersMicroservice)
     {
         _ordersRepository = ordersRepository;
         _mapper = mapper;
+        _usersMicroserviceClient = usersMicroservice;
         _orderAddRequestValidator = orderAddRequestValidator;
         _orderItemAddRequestValidator = orderItemAddRequestValidator;
         _orderUpdateRequestValidator = orderUpdateRequestValidagor;
