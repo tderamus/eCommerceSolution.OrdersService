@@ -62,7 +62,13 @@ public class OrdersService : IOrdersService
         }
 
         //TODO: Check if the CustomerId exists in the Customers microservice
-        //TODO: Check if the UserId exists in the Users microservice
+
+        // Check if the UserId exists in the Users microservice
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserId(orderAddRequest.UserID);
+        if (user == null) 
+        {
+            throw new ArgumentException($"User with ID {orderAddRequest.UserID} does not exist.");
+        }
 
         // Map the OrderAddRequest DTO to the Order entity
         Order orderInput = _mapper.Map<Order>(orderAddRequest);
@@ -111,7 +117,12 @@ public class OrdersService : IOrdersService
         }
 
         //TODO: Check if the CustomerId exists in the Customers microservice
-        //TODO: Check if the UserId exists in the Users microservice
+        // Check if the UserId exists in the Users microservice
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserId(orderUpdateRequest.UserID);
+        if (user == null)
+        {
+            throw new ArgumentException($"User with ID {orderUpdateRequest.UserID} does not exist.");
+        }
 
         // Map the OrderAddRequest DTO to the Order entity
         Order orderInput = _mapper.Map<Order>(orderUpdateRequest);
