@@ -10,7 +10,7 @@ public class OrderItem
     public Guid _id { get; set; }
 
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid ProductId { get; set; }
+    public Guid ProductID { get; set; }
     [BsonRepresentation(MongoDB.Bson.BsonType.Int32)]
     public int Quantity { get; set; }
     [BsonRepresentation(MongoDB.Bson.BsonType.Double)]

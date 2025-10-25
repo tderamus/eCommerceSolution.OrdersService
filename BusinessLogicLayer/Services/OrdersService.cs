@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.DTO;
+using eCommerce.OrdersMicroservice.BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroservice.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroservice.DataAccessLayer.Entities;
 using eCommerce.OrdersMicroservice.DataAccessLayer.RepositoryContracts;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using MongoDB.Driver;
 
 namespace eCommerce.OrdersMicroservice.BusinessLogicLayer.Services;
@@ -12,6 +14,7 @@ public class OrdersService : IOrdersService
 {
     private readonly IOrdersRepository _ordersRepository;
     private readonly IMapper _mapper;
+    private readonly UsersMicroserviceClient _usersMicroserviceClient;
     private readonly IValidator<OrderAddRequest> _orderAddRequestValidator;
     private readonly IValidator<OrderItemAddRequest> _orderItemAddRequestValidator;
     private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
@@ -21,10 +24,12 @@ public class OrdersService : IOrdersService
         IValidator<OrderAddRequest> orderAddRequestValidator,
         IValidator<OrderItemAddRequest> orderItemAddRequestValidator,
         IValidator<OrderUpdateRequest> orderUpdateRequestValidagor,
-        IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator)
+        IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator,
+        UsersMicroserviceClient usersMicroservice)
     {
         _ordersRepository = ordersRepository;
         _mapper = mapper;
+        _usersMicroserviceClient = usersMicroservice;
         _orderAddRequestValidator = orderAddRequestValidator;
         _orderItemAddRequestValidator = orderItemAddRequestValidator;
         _orderUpdateRequestValidator = orderUpdateRequestValidagor;
@@ -57,7 +62,13 @@ public class OrdersService : IOrdersService
         }
 
         //TODO: Check if the CustomerId exists in the Customers microservice
-        //TODO: Check if the UserId exists in the Users microservice
+
+        // Check if the UserId exists in the Users microservice
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserId(orderAddRequest.UserID);
+        if (user == null) 
+        {
+            throw new ArgumentException($"User with ID {orderAddRequest.UserID} does not exist.");
+        }
 
         // Map the OrderAddRequest DTO to the Order entity
         Order orderInput = _mapper.Map<Order>(orderAddRequest);
@@ -66,7 +77,7 @@ public class OrdersService : IOrdersService
         {
            orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
         }
-        orderInput.TotalAmount = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
+        orderInput.TotalBill = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
 
         // Call the repository to add the order
         Order? addedOrder = await _ordersRepository.CreateOrder(orderInput);
@@ -106,7 +117,13 @@ public class OrdersService : IOrdersService
         }
 
         //TODO: Check if the CustomerId exists in the Customers microservice
-        //TODO: Check if the UserId exists in the Users microservice
+
+        // Check if the UserId exists in the Users microservice
+        UserDTO? user = await _usersMicroserviceClient.GetUserByUserId(orderUpdateRequest.UserID);
+        if (user == null)
+        {
+            throw new ArgumentException($"User with ID {orderUpdateRequest.UserID} does not exist.");
+        }
 
         // Map the OrderAddRequest DTO to the Order entity
         Order orderInput = _mapper.Map<Order>(orderUpdateRequest);
@@ -115,7 +132,7 @@ public class OrdersService : IOrdersService
         {
             orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
         }
-        orderInput.TotalAmount = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
+        orderInput.TotalBill = orderInput.OrderItems.Sum(oi => oi.TotalPrice);
 
         // Call the repository to add the order
         Order? updatedOrder = await _ordersRepository.UpdateOrder(orderInput);
@@ -132,7 +149,7 @@ public class OrdersService : IOrdersService
     public async Task<bool> DeleteOrder(Guid orderID)
     {
         //Create filter to find the order by orderID
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderId, orderID);
+        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(o => o.OrderID, orderID);
         Order? existingOrder = await _ordersRepository.GetOrderByCondition(filter);
 
         if (existingOrder == null)
@@ -153,8 +170,9 @@ public class OrdersService : IOrdersService
         Order? order = await _ordersRepository.GetOrderByCondition(filter);
         if (order == null)
         {
-            return default;
+            Results.NotFound("Order ID cannot be found");
         }
+
         OrderResponse orderResponse = _mapper.Map<OrderResponse>(order);
         return orderResponse;
     }
