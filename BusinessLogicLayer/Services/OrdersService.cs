@@ -117,6 +117,7 @@ public class OrdersService : IOrdersService
         }
 
         //TODO: Check if the CustomerId exists in the Customers microservice
+
         // Check if the UserId exists in the Users microservice
         UserDTO? user = await _usersMicroserviceClient.GetUserByUserId(orderUpdateRequest.UserID);
         if (user == null)
